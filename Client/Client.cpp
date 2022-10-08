@@ -52,7 +52,7 @@ int main() {
     printf("Connected to server!\n");
     
     // Send message to client
-    iResult = send(sock, msg, strlen(msg), 0);
+    iResult = send(sock, msg, strlen(msg)+1, 0);
     if (iResult == SOCKET_ERROR) {
         printf("Failed to send message: %d\n", WSAGetLastError());
         iResult = closesocket(sock);
