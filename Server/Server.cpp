@@ -12,6 +12,11 @@
 int main() {
     WSADATA wsaData;
     int iResult = 0;
+    int iSendResult;
+    int recvbuflen = DEFAULT_BUFLEN;
+    char recvbuf[DEFAULT_BUFLEN];
+    
+
 
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -77,6 +82,43 @@ int main() {
     inet_ntop(client.sin_family, &(client.sin_addr),ip,sizeof (ip));
     printf("Connected client info: %s:%u\n", ip,client.sin_port);
 
+    do {
+        iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+        if (iResult > 0) {
+            printf("Received %d bytes\n", iResult);
+            printf("Client Message: %s\n", recvbuf);
+            iSendResult = send(ClientSocket, recvbuf, iResult, 0);
+            if (iSendResult == SOCKET_ERROR) {
+                printf("Failed to echo: %d\n", WSAGetLastError());
+                closesocket(ClientSocket);
+                WSACleanup();
+                return 1;
+            }
+        }
+        else if (iResult == 0)
+            printf("Connection closed\n");
+        else {
+            printf("Failed to receive: %d\n", WSAGetLastError());
+            closesocket(ClientSocket);
+            WSACleanup();
+            return 1;
+        }
+    } while (iResult > 0);
+
+
+    // Shutdown send and recv on client
+    iResult = shutdown(ClientSocket, SD_BOTH);
+    if (iResult == SOCKET_ERROR) {
+        printf("Failed to shutdown: %d\n", WSAGetLastError());
+        closesocket(ClientSocket);
+        WSACleanup();
+        return 1;
+    }
+
+    // cleanup
+    closesocket(ClientSocket);
+    closesocket(ListenSocket);
+    WSACleanup();
 
 
 
