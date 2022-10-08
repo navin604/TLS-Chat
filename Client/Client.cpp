@@ -5,7 +5,7 @@
 #include <tchar.h>
 #pragma comment(lib,"Ws2_32.lib")
 
-
+#define DEFAULT_PORT "1337"
 
 int main() {
     WSADATA wsaData;
@@ -32,7 +32,7 @@ int main() {
     sockaddr_in server_info;
     server_info.sin_family = AF_INET;
     InetPton(AF_INET, _T("127.0.0.1"), &server_info.sin_addr.s_addr);
-    server_info.sin_port = htons(1337);
+    server_info.sin_port = htons(*DEFAULT_PORT);
 
     // Connect to server
     iResult = connect(sock, (SOCKADDR*)&server_info, sizeof(server_info));
@@ -45,6 +45,6 @@ int main() {
         return 1;
     }
 
-    printf("Connected to server!");
+    printf("Connected to server!\n");
     return 0;
 }

@@ -56,9 +56,9 @@ int main() {
         WSACleanup();
         return 1;
     }
-    printf("Listening on %d:%d\n", server_info.sin_addr.s_addr,server_info.sin_port );
+    printf("Listening for connections!\n");
 
-    sockaddr client;
+    sockaddr_in client;
     int sizeclient = sizeof(client);
 
     // Accept a connection
@@ -71,7 +71,11 @@ int main() {
         WSACleanup();
         return 1;
     }
-    printf("Connected client info: %p\n", &client.sa_data);
+
+    // Retrieve and output client info
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(client.sin_family, &(client.sin_addr),ip,sizeof (ip));
+    printf("Connected client info: %s:%u\n", ip,client.sin_port);
 
 
 
