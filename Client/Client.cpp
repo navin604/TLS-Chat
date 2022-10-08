@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <tchar.h>
+#include <string>
 #pragma comment(lib,"Ws2_32.lib")
 
 #define DEFAULT_BUFLEN 512
@@ -14,7 +15,7 @@ int main() {
 
     int recvbuflen = DEFAULT_BUFLEN;
     char recvbuf[DEFAULT_BUFLEN];
-    const char* msg = "This is a test message";
+    char msg[DEFAULT_BUFLEN] = "";
 
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -49,19 +50,39 @@ int main() {
         WSACleanup();
         return 1;
     }
-    printf("Connected to server!\n");
+    printf("Connected to server!\nType 'exit' to close connection\n");
     
-    // Send message to client
-    iResult = send(sock, msg, strlen(msg)+1, 0);
-    if (iResult == SOCKET_ERROR) {
-        printf("Failed to send message: %d\n", WSAGetLastError());
-        iResult = closesocket(sock);
-        if (iResult == SOCKET_ERROR)
-            wprintf(L"closesocket function failed with error: %ld\n", WSAGetLastError());
-        WSACleanup();
-        return 1;
+
+    while (strcmp(msg, "exit") != 0) {
+        // Send message to client
+        std::cin.getline(msg, DEFAULT_BUFLEN);
+        iResult = send(sock, msg, strlen(msg) + 1, 0);
+        if (iResult == SOCKET_ERROR) {
+            printf("Failed to send message: %d\n", WSAGetLastError());
+            iResult = closesocket(sock);
+            if (iResult == SOCKET_ERROR)
+                wprintf(L"closesocket function failed with error: %ld\n", WSAGetLastError());
+            WSACleanup();
+            return 1;
+        }
+        
+        printf("Bytes sent: %d\n", iResult);
+
+               
+        iResult = recv(sock, recvbuf, recvbuflen, 0);
+        if (iResult > 0) {
+            printf("Bytes received: %d\n", iResult);
+             printf("Echo Message: %s\n", recvbuf);
+         }
+        else if (iResult == 0) {
+            printf("Connection closed\n");
+        }
+        else
+            printf("recv failed: %d \n", WSAGetLastError());
+        
+
+        
     }
-    printf("Bytes sent: %d\n", iResult);
 
     //Disable send on the socket
     iResult = shutdown(sock, SD_SEND);
@@ -75,18 +96,7 @@ int main() {
     }
 
 
-    do {
-        iResult = recv(sock, recvbuf, recvbuflen, 0);
-        if (iResult > 0) {
-            printf("Bytes received: %d\n", iResult);
-        }
-        else if (iResult == 0) {
-            printf("Connection closed\n");
-        }
-        else
-            printf("recv failed: %d \n", WSAGetLastError());
-    } while (iResult > 0);
-
+  
 
     //Disable recv on the socket
     iResult = shutdown(sock, SD_RECEIVE);
@@ -101,9 +111,7 @@ int main() {
 
 
 
-    // Output recv message
-    printf("Message received: %s\n", recvbuf);
-
+  
     // cleanup
     closesocket(sock);
     WSACleanup();

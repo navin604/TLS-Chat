@@ -86,6 +86,8 @@ int main() {
         iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0) {
             printf("Received %d bytes\n", iResult);
+            if (recvbuf == "exit") 
+                break;
             printf("Client Message: %s\n", recvbuf);
             iSendResult = send(ClientSocket, recvbuf, iResult, 0);
             if (iSendResult == SOCKET_ERROR) {
@@ -103,7 +105,7 @@ int main() {
             WSACleanup();
             return 1;
         }
-    } while (iResult > 0);
+    } while (iResult != 0);
 
 
     // Shutdown send and recv on client
